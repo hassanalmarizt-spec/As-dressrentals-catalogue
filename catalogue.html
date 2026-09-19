@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>A's Rentals - Dress Catalogue</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#f9f9f9; }
+    header { background:#d6336c; color:#fff; text-align:center; padding:20px; }
+    .controls { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; padding:18px; }
+    .controls button, .controls select, .controls input { border:0; padding:8px 12px; border-radius:6px; }
+    .controls button { background:#d6336c; color:#fff; cursor:pointer; }
+    .controls button:hover { background:#a61e4d; }
+    .controls input, .controls select { border:1px solid #ccc; }
+    .catalogue { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:20px; padding:20px; }
+    .dress-card { background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.08); text-align:center; }
+    .dress-card img { width:100%; height:320px; object-fit:cover; }
+    .price { font-weight:bold; color:#d6336c; }
+    .contact { background:#fff; max-width:900px; margin:20px auto; padding:22px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+    .contact h2 { color:#d6336c; }
+    .contact form { display:flex; flex-direction:column; gap:10px; }
+    .contact input, .contact textarea { padding:10px; border:1px solid #ccc; border-radius:6px; }
+    .contact button { background:#d6336c; color:#fff; border:0; padding:10px; border-radius:6px; cursor:pointer; }
+    .contact button:hover { background:#a61e4d; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>A's Rentals - Dress Catalogue</h1>
+    <p>Filter, search, sort and book the perfect dress</p>
+  </header>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button onclick="setCategory('all')">Show All</button>
+    <button onclick="setCategory('evening')">Evening</button>
+    <button onclick="setCategory('cocktail')">Cocktail</button>
+    <button onclick="setCategory('wedding')">Wedding</button>
+    <input id="searchBar" type="text" placeholder="Search..." oninput="applyFilters()" />
+    <input id="minPrice" type="number" placeholder="Min ₱" oninput="applyFilters()" />
+    <input id="maxPrice" type="number" placeholder="Max ₱" oninput="applyFilters()" />
+    <select id="sortBy" onchange="applyFilters()">
+      <option value="default">Sort: Default</option>
+      <option value="price-asc">Price: Low → High</option>
+      <option value="price-desc">Price: High → Low</option>
+      <option value="alpha-asc">Name: A → Z</option>
+      <option value="alpha-desc">Name: Z → A</option>
+    </select>
+  </div>
+
+  <!-- Catalogue -->
+  <section id="catalogue" class="catalogue">
+    <div class="dress-card" data-category="evening" data-price="2500" data-title="Elegant Evening Gown">
+      <img src="https://via.placeholder.com/800x1200?text=Evening+Gown" alt="Evening Gown">
+      <h3>Elegant Evening Gown</h3>
+      <p>Perfect for formal events and galas.</p>
+      <p class="price">₱2500</p>
+      <button onclick="prefillBooking('Elegant Evening Gown',2500)">Book Now</button>
+    </div>
+    <div class="dress-card" data-category="cocktail" data-price="1800" data-title="Chic Cocktail Dress">
+      <img src="https://via.placeholder.com/800x1200?text=Cocktail+Dress" alt="Cocktail Dress">
+      <h3>Chic Cocktail Dress</h3>
+      <p>Stylish and modern, ideal for parties.</p>
+      <p class="price">₱1800</p>
+      <button onclick="prefillBooking('Chic Cocktail Dress',1800)">Book Now</button>
+    </div>
+    <div class="dress-card" data-category="wedding" data-price="4000" data-title="Classic Wedding Dress">
+      <img src="https://via.placeholder.com/800x1200?text=Wedding+Dress" alt="Wedding Dress">
+      <h3>Classic Wedding Dress</h3>
+      <p>A timeless design for your special day.</p>
+      <p class="price">₱4000</p>
+      <button onclick="prefillBooking('Classic Wedding Dress',4000)">Book Now</button>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="contact">
+    <h2>Contact & Booking</h2>
+    <form onsubmit="submitBooking(event)">
+      <label>Selected Dress</label>
+      <input id="bookDress" readonly />
+      <label>Price (₱)</label>
+      <input id="bookPrice" readonly />
+      <label>Full Name</label>
+      <input id="name" required />
+      <label>Email</label>
+      <input id="email" type="email" required />
+      <label>Rental Date</label>
+      <input id="date" type="date" required />
+      <label>Message</label>
+      <textarea id="message" rows="4" required></textarea>
+      <button type="submit">Send Inquiry</button>
+    </form>
+  </section>
+
+  <script>
+    let currentCategory = 'all';
+    function setCategory(cat){ currentCategory=cat; applyFilters(); }
+    function applyFilters(){
+      const search=document.getElementById('searchBar').value.toLowerCase();
+      const min=parseInt(document.getElementById('minPrice').value)||0;
+      const max=parseInt(document.getElementById('maxPrice').value)||Infinity;
+      const sortBy=document.getElementById('sortBy').value;
+      let cards=[...document.querySelectorAll('.dress-card')];
+      let filtered=cards.filter(c=>{
+        const cat=c.dataset.category;
+        const title=c.dataset.title.toLowerCase();
+        const price=parseInt(c.dataset.price);
+        if(currentCategory!=='all'&&cat!==currentCategory) return false;
+        if(search&&!title.includes(search)) return false;
+        if(price<min||price>max) return false;
+        return true;
+      });
+      if(sortBy==='price-asc') filtered.sort((a,b)=>a.dataset.price-b.dataset.price);
+      if(sortBy==='price-desc') filtered.sort((a,b)=>b.dataset.price-a.dataset.price);
+      if(sortBy==='alpha-asc') filtered.sort((a,b)=>a.dataset.title.localeCompare(b.dataset.title));
+      if(sortBy==='alpha-desc') filtered.sort((a,b)=>b.dataset.title.localeCompare(a.dataset.title));
+      const container=document.getElementById('catalogue');
+      container.innerHTML='';
+      filtered.forEach(c=>container.appendChild(c));
+    }
+    function prefillBooking(title,price){
+      document.getElementById('bookDress').value=title;
+      document.getElementById('bookPrice').value=price;
+      document.querySelector('.contact').scrollIntoView({behavior:'smooth'});
+    }
+    function submitBooking(e){
+      e.preventDefault();
+      alert("Thank you! Your inquiry has been received.");
+      e.target.reset();
+      document.getElementById('bookDress').value='';
+      document.getElementById('bookPrice').value='';
+    }
+    document.addEventListener('DOMContentLoaded',applyFilters);
+  </script>
+</body>
+</html>
